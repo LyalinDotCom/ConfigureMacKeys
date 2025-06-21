@@ -84,10 +84,11 @@ class MacEnvManager:
 
         if not permanent:
             # For temporary variables, we can only provide the export command
+            quoted_value = f'"{value}"' if ' ' in value or '"' in value else value
             print(f"To set {name} in your current session, run:")
-            print(f"  export {name}={value}")
+            print(f"  export {name}={quoted_value}")
             print("\nOr use this command with eval:")
-            print(f"  eval $(configkeys export {name} {value})")
+            print(f"  eval $(configkeys export {name} '{value}')")
             return True
 
         # Make it permanent by adding to shell config
@@ -170,6 +171,12 @@ class MacEnvManager:
             print(f"Error writing to {config_file}: {e}")
             return False
 
+    def export_command(self, name: str, value: str) -> None:
+        """Output an export command that can be eval'd"""
+        # Properly quote the value to handle spaces and special characters
+        quoted_value = f'"{value}"' if ' ' in value or '"' in value else value
+        print(f"export {name}={quoted_value}")
+
     def show_config_location(self) -> None:
         """Show where the configuration file is located"""
         print(f"Primary configuration file: {self.primary_config}")
@@ -192,7 +199,9 @@ def main():
 Examples:
   configkeys list                    # List all environment variables
   configkeys list PATH              # List variables containing 'PATH'
-  configkeys set GEMINI_API_KEY mykey123  # Set a new variable
+  configkeys set GEMINI_API_KEY mykey123  # Set a new variable (permanent)
+  configkeys set DEBUG true --temp  # Set temporary variable (with instructions)
+  eval $(configkeys export DEBUG true)    # Set temporary variable immediately
   configkeys remove OLD_VAR         # Remove a variable
   configkeys info                   # Show config file location
         """
@@ -215,6 +224,11 @@ Examples:
     remove_parser = subparsers.add_parser('remove', help='Remove an environment variable')
     remove_parser.add_argument('name', help='Variable name to remove')
     
+    # Export command (for eval usage)
+    export_parser = subparsers.add_parser('export', help='Output export command for eval')
+    export_parser.add_argument('name', help='Variable name')
+    export_parser.add_argument('value', help='Variable value')
+    
     # Info command
     info_parser = subparsers.add_parser('info', help='Show configuration file information')
     
@@ -232,6 +246,8 @@ Examples:
         manager.set_env_var(args.name, args.value, permanent=not args.temp)
     elif args.command == 'remove':
         manager.remove_env_var(args.name)
+    elif args.command == 'export':
+        manager.export_command(args.name, args.value)
     elif args.command == 'info':
         manager.show_config_location()
 
