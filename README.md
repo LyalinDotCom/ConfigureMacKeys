@@ -88,6 +88,20 @@ configkeys remove GEMINI_API_KEY
 - Shows clear feedback about what changes were made
 - Handles errors gracefully
 
+## Limitations and Considerations
+
+While `configkeys` aims to simplify environment variable management, there are some limitations and scenarios to be aware of:
+
+*   **Shell Reload Required**: After setting or unsetting a variable that affects future terminal sessions (i.e., not using the `--temp` flag), you'll need to either:
+    *   Restart your terminal.
+    *   Source your shell configuration file (e.g., `source ~/.zshrc`) in any open terminal tabs/windows for the changes to take effect there.
+    The tool will remind you of this.
+*   **Temporary Variables**: While `configkeys set --temp` exists for session-specific variables, this utility primarily focuses on persistent environment variables. For complex temporary variable needs, direct shell commands like `export VAR="value"` might be more straightforward.
+*   **Application-Specific Variables**: Some applications or development tools manage their own environment variables internally or through dedicated configuration files (e.g., `.env` files for Node.js projects, IDE-specific settings). `configkeys` manages shell-level environment variables and won't interfere with these.
+*   **System-Wide Variables**: This tool operates at the user level, modifying user-specific shell configuration files. It does not manage system-wide environment variables that would typically require `sudo` privileges and modifications to files like `/etc/profile` or `/etc/environment`.
+*   **GUI Applications**: GUI applications on macOS do not always inherit environment variables set in shell configuration files like `.zshrc`. If you need an environment variable to be available to a GUI application, you might need to use other methods, such as editing `environment.plist` or using `launchctl setenv`.
+*   **Scope**: The tool is designed for managing variables in `~/.zshrc`. If you use a different shell or a more complex shell setup (e.g., sourcing multiple files, using frameworks like Oh My Zsh that have their own variable management), you might need to adjust your workflow or ensure `configkeys` targets the correct configuration file if it's not the default.
+
 ## Requirements
 
 - macOS (tested on recent versions)
